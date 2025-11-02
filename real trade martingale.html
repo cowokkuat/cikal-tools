@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Martingale Lock $2 Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen p-6">
+    <div class="max-w-5xl mx-auto">
+        <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 p-6">
+                <div class="flex items-center gap-3">
+                    <svg class="w-8 h-8 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                    <h1 class="text-2xl font-bold text-slate-900">Analisa Lock $2 - Data Real</h1>
+                </div>
+                <p class="text-slate-800 mt-2">Pure Data Real Trade, No Teori</p>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- Position Type & Level Selection -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Tipe Posisi -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-3">TIPE POSISI</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="setPositionType('SELL')" id="btnSell"
+                                class="py-4 px-4 rounded-lg font-bold text-lg transition-all bg-red-500 text-white shadow-lg scale-105">
+                                ↓ SELL
+                            </button>
+                            <button onclick="setPositionType('BUY')" id="btnBuy"
+                                class="py-4 px-4 rounded-lg font-bold text-lg transition-all bg-slate-700 text-slate-300 hover:bg-slate-600">
+                                ↑ BUY
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Level Entry -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-3">PILIH LEVEL</label>
+                        <div class="grid grid-cols-7 gap-2" id="levelButtons">
+                            <!-- Level buttons akan di-generate oleh JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Entry Levels -->
+                <div class="bg-slate-700 rounded-lg p-5 border border-slate-600">
+                    <h3 class="text-lg font-semibold text-yellow-400 mb-4">📝 DATA ENTRY</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="entryContainer">
+                        <!-- Entry inputs akan di-generate oleh JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Close Price -->
+                <div class="bg-slate-700 rounded-lg p-5 border border-slate-600">
+                    <h3 class="text-lg font-semibold text-yellow-400 mb-4">🎯 HARGA CLOSE ALL</h3>
+                    <input type="number" step="0.001" id="closePrice" placeholder="Masukkan harga close"
+                        oninput="calculate()"
+                        class="w-full p-4 bg-slate-900 border border-slate-600 rounded-lg text-white text-center text-2xl font-bold placeholder-slate-600 focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                </div>
+
+                <!-- Results -->
+                <div id="resultsContainer" style="display: none;">
+                    <div class="bg-gradient-to-br from-slate-700 to-slate-600 rounded-lg p-6 border-2 border-yellow-500">
+                        <h3 class="text-xl font-bold text-yellow-400 mb-5 flex items-center gap-2">
+                            📊 HASIL ANALISA DATA REAL
+                        </h3>
+                        
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-600">
+                                <p class="text-sm text-slate-400 mb-1">Entry Terakhir</p>
+                                <p class="text-2xl font-bold text-white" id="lastEntryDisplay">-</p>
+                            </div>
+                            <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-600">
+                                <p class="text-sm text-slate-400 mb-1">Harga Close</p>
+                                <p class="text-2xl font-bold text-green-400" id="closePriceDisplay">-</p>
+                            </div>
+                            <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-600">
+                                <p class="text-sm text-slate-400 mb-1">Total Lot</p>
+                                <p class="text-2xl font-bold text-blue-400" id="totalLotDisplay">-</p>
+                            </div>
+                        </div>
+
+                        <!-- Kesimpulan -->
+                        <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 shadow-lg">
+                            <h4 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+                                🎯 KESIMPULAN:
+                            </h4>
+                            <div class="bg-slate-900 rounded-lg p-5 border-2 border-slate-700">
+                                <p class="text-2xl font-bold text-center text-white leading-relaxed" id="conclusionText">
+                                    -
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="emptyState" class="bg-slate-700 rounded-lg p-8 border border-slate-600 text-center">
+                    <p class="text-slate-400 text-lg">
+                        👆 Lengkapi semua data entry dan harga close untuk melihat hasil analisa
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Footer -->
+        <div class="mt-6 text-center text-slate-400 text-sm">
+            <p>💡 Calculator ini 100% berdasarkan data real trade, tanpa teori</p>
+        </div>
+    </div>
+
+    <script>
+        // Data lot dari tabel
+        const lotData = {
+            1: [0.01],
+            2: [0.01, 0.02],
+            3: [0.01, 0.02, 0.04],
+            4: [0.01, 0.02, 0.04, 0.08],
+            5: [0.01, 0.02, 0.04, 0.08, 0.16],
+            6: [0.01, 0.02, 0.04, 0.08, 0.16, 0.32],
+            7: [0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64]
+        };
+
+        let currentPositionType = 'SELL';
+        let currentLevel = 2;
+
+        // Initialize
+        function init() {
+            generateLevelButtons();
+            generateEntryInputs();
+        }
+
+        // Generate level buttons
+        function generateLevelButtons() {
+            const container = document.getElementById('levelButtons');
+            container.innerHTML = '';
+            for (let i = 1; i <= 7; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.onclick = () => setLevel(i);
+                btn.id = `btnLevel${i}`;
+                btn.className = i === currentLevel 
+                    ? 'py-4 rounded-lg font-bold transition-all bg-yellow-500 text-slate-900 shadow-lg scale-110'
+                    : 'py-4 rounded-lg font-bold transition-all bg-slate-700 text-slate-300 hover:bg-slate-600';
+                container.appendChild(btn);
+            }
+        }
+
+        // Set position type
+        function setPositionType(type) {
+            currentPositionType = type;
+            document.getElementById('btnSell').className = type === 'SELL'
+                ? 'py-4 px-4 rounded-lg font-bold text-lg transition-all bg-red-500 text-white shadow-lg scale-105'
+                : 'py-4 px-4 rounded-lg font-bold text-lg transition-all bg-slate-700 text-slate-300 hover:bg-slate-600';
+            document.getElementById('btnBuy').className = type === 'BUY'
+                ? 'py-4 px-4 rounded-lg font-bold text-lg transition-all bg-green-500 text-white shadow-lg scale-105'
+                : 'py-4 px-4 rounded-lg font-bold text-lg transition-all bg-slate-700 text-slate-300 hover:bg-slate-600';
+            calculate();
+        }
+
+        // Set level
+        function setLevel(level) {
+            currentLevel = level;
+            generateLevelButtons();
+            generateEntryInputs();
+            calculate();
+        }
+
+        // Generate entry inputs
+        function generateEntryInputs() {
+            const container = document.getElementById('entryContainer');
+            container.innerHTML = '';
+            const lots = lotData[currentLevel];
+            
+            for (let i = 0; i < currentLevel; i++) {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-800 rounded-lg p-4 border border-slate-600';
+                div.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-yellow-400">ENTRY LEVEL ${i + 1}</span>
+                        <span class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300">
+                            Lot: ${lots[i]}
+                        </span>
+                    </div>
+                    <input type="number" step="0.001" id="entry${i}" placeholder="Harga entry"
+                        oninput="calculate()"
+                        class="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white text-center text-lg font-bold placeholder-slate-600 focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Calculate
+        function calculate() {
+            const entries = [];
+            for (let i = 0; i < currentLevel; i++) {
+                const val = document.getElementById(`entry${i}`).value;
+                if (val) entries.push(parseFloat(val));
+            }
+
+            const closePrice = document.getElementById('closePrice').value;
+
+            if (entries.length === 0 || !closePrice) {
+                document.getElementById('resultsContainer').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+
+            const closePriceNum = parseFloat(closePrice);
+            const lastEntry = entries[entries.length - 1];
+            const lots = lotData[currentLevel];
+            
+            let totalLot = 0;
+            for (let i = 0; i < entries.length; i++) {
+                totalLot += lots[i];
+            }
+
+            let pipsFromLast;
+            if (currentPositionType === 'SELL') {
+                pipsFromLast = (lastEntry - closePriceNum) * 100;
+            } else {
+                pipsFromLast = (closePriceNum - lastEntry) * 100;
+            }
+
+            // Display results
+            document.getElementById('lastEntryDisplay').textContent = lastEntry.toFixed(3);
+            document.getElementById('closePriceDisplay').textContent = closePriceNum.toFixed(3);
+            document.getElementById('totalLotDisplay').textContent = totalLot.toFixed(2);
+            
+            const direction = currentPositionType === 'SELL' ? 'turun' : 'naik';
+            document.getElementById('conclusionText').innerHTML = `
+                Lock $2 ketika harga ${direction} 
+                <span class="text-yellow-400 text-3xl">${Math.abs(pipsFromLast).toFixed(1)}</span> 
+                <span class="text-yellow-400 text-3xl">pips</span>
+                <br>
+                <span class="text-lg text-slate-400">dari entry terakhir</span>
+            `;
+
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('emptyState').style.display = 'none';
+        }
+
+        // Initialize on load
+        window.onload = init;
+    </script>
+</body>
+</html>

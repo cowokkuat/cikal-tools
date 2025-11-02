@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XAUUSD Compounding Calculator - Exness MT5</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: #16213e;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00adb5 0%, #00d9ff 100%);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 8px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #1a1a2e;
+            opacity: 0.9;
+        }
+
+        .mode-tabs {
+            display: flex;
+            background: #0f3460;
+            border-bottom: 2px solid #00adb5;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            color: #aaa;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            background: rgba(0, 173, 181, 0.1);
+            color: #00d9ff;
+        }
+
+        .tab.active {
+            background: #00adb5;
+            color: #fff;
+        }
+
+        .content {
+            padding: 35px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00d9ff;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 45px 14px 18px;
+            background: #0f3460;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #00adb5;
+            box-shadow: 0 0 0 3px rgba(0, 173, 181, 0.2);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #00adb5;
+        }
+
+        .fixed-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 10px;
+            margin-left: 8px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00adb5 0%, #00d9ff 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 173, 181, 0.4);
+        }
+
+        .btn-calculate:active {
+            transform: scale(0.98);
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            border: 2px solid #00adb5;
+            border-radius: 12px;
+            animation: slideUp 0.5s ease;
+            box-shadow: 0 4px 12px rgba(0, 173, 181, 0.3);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 173, 181, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            color: #00d9ff;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-main {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00d9ff;
+            text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            background: rgba(0, 173, 181, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #00adb5;
+        }
+
+        .result-label {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00d9ff;
+        }
+
+        .martingale-table {
+            background: rgba(0, 173, 181, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .martingale-title {
+            color: #00d9ff;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .martingale-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+        }
+
+        .martingale-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: #ff6b6b;
+            padding-top: 12px;
+            margin-top: 8px;
+            border-top: 2px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-copy {
+            width: 100%;
+            padding: 12px;
+            background: #533483;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .btn-copy:hover {
+            background: #7c4dff;
+            transform: translateY(-2px);
+        }
+
+        .btn-copy.copied {
+            background: #00ff88;
+        }
+
+        .formula-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 173, 181, 0.1);
+            border-left: 4px solid #00adb5;
+            border-radius: 4px;
+        }
+
+        .formula-title {
+            color: #00d9ff;
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .formula-text {
+            color: #bbb;
+            font-size: 13px;
+            line-height: 1.8;
+            font-family: 'Courier New', monospace;
+        }
+
+        .info-panel {
+            margin-top: 25px;
+            padding: 18px;
+            background: #0f3460;
+            border-left: 4px solid #00adb5;
+            border-radius: 8px;
+        }
+
+        .info-title {
+            color: #00adb5;
+            font-size: 13px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-list li {
+            color: #bbb;
+            font-size: 12px;
+            margin-bottom: 8px;
+            padding-left: 18px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .info-list li:before {
+            content: "•";
+            color: #00adb5;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .warning-box {
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 4px solid #ff6b6b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .warning-title {
+            color: #ff6b6b;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .warning-text {
+            color: #ffaaaa;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .option-box {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 173, 181, 0.05);
+            border-radius: 10px;
+        }
+
+        .option-header {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-main {
+                font-size: 26px;
+            }
+
+            .tab {
+                font-size: 12px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 XAUUSD CALCULATOR PRO</h1>
+            <p>Compounding & Profit Calculator - Exness MT5</p>
+        </div>
+
+        <div class="mode-tabs">
+            <button class="tab active" id="tabCompounding">
+                📈 COMPOUNDING
+            </button>
+            <button class="tab" id="tabBasic">
+                🔢 BASIC CALC
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- COMPOUNDING CALCULATOR -->
+            <div id="compounding" class="tab-content active">
+                <div class="form-group">
+                    <label>💰 BALANCE SAAT INI ($)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="balance" placeholder="10000" step="0.01" value="10000">
+                        <span class="input-icon">💵</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>🎯 TARGET HARIAN (%)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="targetPercent" placeholder="10" step="0.1" value="10">
+                        <span class="input-icon">%</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>📊 JUMLAH ENTRY TARGET OPSI B (AUTO)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="entryTarget" placeholder="150" min="100" max="200" value="150">
+                        <span class="input-icon">🎯</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>📏 PIPS TARGET <span class="fixed-badge">FIXED 200</span></label>
+                    <div class="input-wrapper">
+                        <input type="number" value="200" readonly style="background: #1a1a2e; cursor: not-allowed;">
+                        <span class="input-icon">🔒</span>
+                    </div>
+                </div>
+
+                <button class="btn-calculate" id="btnCompounding">
+                    🚀 HITUNG COMPOUNDING
+                </button>
+
+                <div id="compoundingResult" style="display:none;"></div>
+            </div>
+
+            <!-- BASIC CALCULATOR -->
+            <div id="basic" class="tab-content">
+                <div class="form-group">
+                    <label>PILIH YANG MAU DICARI:</label>
+                    <select id="basicMode">
+                        <option value="pips">Pips Needed</option>
+                        <option value="lot">Lot Size</option>
+                        <option value="profit">Profit ($)</option>
+                    </select>
+                </div>
+
+                <div id="basicInputs">
+                    <div class="form-group">
+                        <label>PROFIT TARGET ($)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="basicProfit" placeholder="2.00" step="0.01" value="2">
+                            <span class="input-icon">💵</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>LOT SIZE</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="basicLot" placeholder="0.01" step="0.01" value="0.01">
+                            <span class="input-icon">📦</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-calculate" id="btnBasic">
+                    🧮 HITUNG SEKARANG
+                </button>
+
+                <div id="basicResult" style="display:none;"></div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-title">ℹ️ INFORMASI RUMUS BAKU</div>
+                <ul class="info-list">
+                    <li><strong>Lot = Lock Profit ($) / 200</strong></li>
+                    <li>Pips FIXED 200 points untuk semua perhitungan</li>
+                    <li>Multiplier 100 = Standar XAUUSD Exness MT5</li>
+                    <li>Harga 4000→4002 = 200 pips/points = Profit sesuai lot</li>
+                    <li>Scaling: Lock profit naik 2x → Lot naik 2x</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const FIXED_PIPS = 200;
+
+        // Function to round lot to realistic values (minimum 0.01 increment)
+        function roundToRealisticLot(lot) {
+            if (lot < 0.01) return 0.01;
+            // Round to nearest 0.01
+            return Math.ceil(lot * 100) / 100;
+        }
+        
+        // Get actual lot before rounding (for display purposes)
+        function getActualLot(lot) {
+            return Math.round(lot * 10000) / 10000;
+        }
+
+        // Tab switching
+        document.getElementById('tabCompounding').addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('compounding').classList.add('active');
+        });
+
+        document.getElementById('tabBasic').addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('basic').classList.add('active');
+        });
+
+        // Compounding Calculator
+        document.getElementById('btnCompounding').addEventListener('click', function() {
+            const balance = parseFloat(document.getElementById('balance').value);
+            const targetPercent = parseFloat(document.getElementById('targetPercent').value);
+            const entryTarget = parseInt(document.getElementById('entryTarget').value);
+
+            if (!balance || !targetPercent || !entryTarget) {
+                alert('Mohon isi semua field!');
+                return;
+            }
+
+            if (entryTarget < 100 || entryTarget > 200) {
+                alert('Entry target harus antara 100-200!');
+                return;
+            }
+
+            const targetProfit = balance * (targetPercent / 100);
+            
+            let html = `
+                <div class="result-container">
+                    <div class="result-header">
+                        <div class="result-title">✅ HASIL PERHITUNGAN COMPOUNDING</div>
+                        <div class="result-main">TARGET: $${targetProfit.toFixed(2)}</div>
+                    </div>
+            `;
+
+            // 3 Options: A (100), B (target), C (200)
+            const entryOptions = [
+                { entries: 100, label: 'OPSI A (KONSERVATIF)', color: '#00ff88' },
+                { entries: entryTarget, label: 'OPSI B (TARGET CUSTOM)', color: '#00d9ff' },
+                { entries: 200, label: 'OPSI C (AGRESIF)', color: '#ffaa00' }
+            ];
+
+            entryOptions.forEach((option) => {
+                const profitPerCycle = targetProfit / option.entries;
+                const lotSize = profitPerCycle / FIXED_PIPS;
+                const actualLot = getActualLot(lotSize);
+                const roundedLot = roundToRealisticLot(lotSize);
+                const actualProfitPerCycle = roundedLot * FIXED_PIPS;
+                const actualTotalProfit = actualProfitPerCycle * option.entries;
+                
+                // Martingale levels with realistic rounding
+                const levels = [1, 2, 4, 8, 16, 32, 64].map((mult, i) => {
+                    const lotValue = roundToRealisticLot(roundedLot * mult);
+                    return {
+                        level: i + 1,
+                        multiplier: mult,
+                        lot: lotValue
+                    };
+                });
+                
+                const totalLotLevel7 = levels.reduce((sum, l) => sum + l.lot, 0);
+                const maxDrawdown = totalLotLevel7 * FIXED_PIPS * 0.5;
+                const drawdownPercent = (maxDrawdown / balance * 100);
+                
+                const riskLevel = drawdownPercent < 10 ? '✅ LOW' : drawdownPercent < 20 ? '⚠️ MODERATE' : '🚨 HIGH';
+                
+                const lotNote = actualLot !== roundedLot ? 
+                    `<div style="font-size: 11px; color: #ffaa00; margin-top: 5px;">⚠️ Actual: ${actualLot.toFixed(4)} → Rounded to ${roundedLot.toFixed(2)} (executable)</div>` : '';
+                
+                html += `
+                    <div class="option-box" style="border: 2px solid ${option.color};">
+                        <div class="option-header" style="color: ${option.color};">
+                            ${option.label} - ${option.entries} ENTRY/DAY
+                        </div>
+                        
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-label">Lot Size (Executable)</div>
+                                <div class="result-value">${roundedLot.toFixed(2)}${lotNote}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Lock Profit/Cycle</div>
+                                <div class="result-value">${actualProfitPerCycle.toFixed(2)}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Total Entry</div>
+                                <div class="result-value">${option.entries}x</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Total Profit</div>
+                                <div class="result-value">${actualTotalProfit.toFixed(2)}</div>
+                            </div>
+                        </div>
+
+                        <div class="martingale-table">
+                            <div class="martingale-title">📊 MARTINGALE LEVEL EXPOSURE (REALISTIC)</div>
+                            ${levels.map(l => `
+                                <div class="martingale-row">
+                                    <span>Level ${l.level} (×${l.multiplier})</span>
+                                    <span>${l.lot.toFixed(2)} lot</span>
+                                </div>
+                            `).join('')}
+                            <div class="martingale-row">
+                                <span>TOTAL LEVEL 7</span>
+                                <span>${totalLotLevel7.toFixed(2)} lot</span>
+                            </div>
+                        </div>
+
+                        <div class="warning-box">
+                            <div class="warning-title">⚠️ RISK ANALYSIS</div>
+                            <div class="warning-text">
+                                Max Drawdown (50% retracement): ${maxDrawdown.toFixed(2)} (${drawdownPercent.toFixed(1)}%)<br>
+                                Risk Level: ${riskLevel}<br>
+                                Balance After Drawdown: ${(balance - maxDrawdown).toFixed(2)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    <div class="formula-box">
+                        <div class="formula-title">📝 RUMUS YANG DIPAKAI</div>
+                        <div class="formula-text">
+                            Lot (Raw) = Lock Profit ($) / 200<br>
+                            Lot (Realistic) = Rounded to 0.02, 0.03, 0.04, 0.05, dst.<br>
+                            Lock Profit = Target Profit / Entry Count<br>
+                            Target Profit = Balance × (Target % / 100)
+                        </div>
+                    </div>
+                    <div class="info-panel">
+                        <div class="info-title">💡 PENJELASAN LOT REALISTIS</div>
+                        <ul class="info-list">
+                            <li>Minimum lot yang bisa dibuka: 0.01</li>
+                            <li>Lot realistis: 0.02, 0.03, 0.04, 0.05, 0.06, dst</li>
+                            <li>Sistem auto-round ke nilai terdekat yang bisa dieksekusi</li>
+                            <li>Martingale dihitung dengan kelipatan realistis</li>
+                        </ul>
+                    </div>
+                    <button class="btn-copy" onclick="copyCompoundingResult()">📋 COPY RESULT</button>
+                </div>
+            `;
+
+            document.getElementById('compoundingResult').innerHTML = html;
+            document.getElementById('compoundingResult').style.display = 'block';
+            
+            // Smooth scroll
+            setTimeout(() => {
+                document.getElementById('compoundingResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        });
+
+        // Basic Calculator
+        document.getElementById('basicMode').addEventListener('change', updateBasicForm);
+        
+        function updateBasicForm() {
+            const mode = document.getElementById('basicMode').value;
+            const container = document.getElementById('basicInputs');
+            
+            if (mode === 'pips') {
+                container.innerHTML = `
+                    <div class="form-group">
+                        <label>PROFIT TARGET ($)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="basicProfit" placeholder="2.00" step="0.01" value="2">
+                            <span class="input-icon">💵</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>LOT SIZE</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="basicLot" placeholder="0.01" step="0.01" value="0.01">
+                            <span class="input-icon">📦</span>
+                        </div>
+                    </div>
+                `;
+            } else if (mode === 'lot') {
+                container.innerHTML = `
+                    <div class="form-group">
+                        <label>PROFIT TARGET ($)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="basicProfit" placeholder="2.00" step="0.01" value="2">
+                            <span class="input-icon">💵</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>PIPS (FIXED)</label>
+                        <div class="input-wrapper">
+                            <input type="number" value="200" readonly style="background: #1a1a2e; cursor: not-allowed;">
+                            <span class="input-icon">🔒</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="form-group">
+                        <label>PIPS (FIXED)</label>
+                        <div class="input-wrapper">
+                            <input type="number" value="200" readonly style="background: #1a1a2e; cursor: not-allowed;">
+                            <span class="input-icon">🔒</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>LOT SIZE</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="basicLot" placeholder="0.01" step="0.01" value="0.01">
+                            <span class="input-icon">📦</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById('btnBasic').addEventListener('click', function() {
+            const mode = document.getElementById('basicMode').value;
+            let result, resultText, formula, actualValue, note;
+            
+            if (mode === 'pips') {
+                const profit = parseFloat(document.getElementById('basicProfit').value);
+                const lot = parseFloat(document.getElementById('basicLot').value);
+                if (!profit || !lot) {
+                    alert('Mohon isi semua field!');
+                    return;
+                }
+                result = profit / lot;
+                resultText = `${result.toFixed(0)} POINTS`;
+                formula = `Pips = ${profit} / ${lot} = ${result.toFixed(2)} points`;
+                note = `Untuk mendapatkan profit ${profit} dengan lot ${lot}, Anda butuh ${result.toFixed(0)} pips/points.`;
+            } else if (mode === 'lot') {
+                const profit = parseFloat(document.getElementById('basicProfit').value);
+                if (!profit) {
+                    alert('Mohon isi field profit!');
+                    return;
+                }
+                actualValue = profit / FIXED_PIPS;
+                result = roundToRealisticLot(actualValue);
+                resultText = `${result.toFixed(2)} LOT`;
+                
+                if (Math.abs(actualValue - result) > 0.001) {
+                    formula = `Lot (Actual) = ${profit} / 200 = ${actualValue.toFixed(4)}<br>Lot (Executable) = ${result.toFixed(2)} (rounded up)`;
+                    const newProfit = result * FIXED_PIPS;
+                    note = `⚠️ Karena lot minimal 0.01, actual lot ${actualValue.toFixed(4)} dibulatkan ke ${result.toFixed(2)}. Dengan lot ${result.toFixed(2)}, profit menjadi ${newProfit.toFixed(2)}.`;
+                } else {
+                    formula = `Lot = ${profit} / 200 = ${result.toFixed(2)}`;
+                    note = `Untuk profit ${profit} dengan 200 pips, gunakan lot ${result.toFixed(2)}.`;
+                }
+            } else {
+                const lot = parseFloat(document.getElementById('basicLot').value);
+                if (!lot) {
+                    alert('Mohon isi field lot!');
+                    return;
+                }
+                result = lot * FIXED_PIPS;
+                resultText = `${result.toFixed(2)}`;
+                formula = `Profit = ${lot} × 200 = ${result.toFixed(2)}`;
+                note = `Dengan lot ${lot} dan 200 pips, Anda akan mendapat profit ${result.toFixed(2)}.`;
+            }
+
+            const html = `
+                <div class="result-container">
+                    <div class="result-header">
+                        <div class="result-title">✅ HASIL PERHITUNGAN</div>
+                        <div class="result-main">${resultText}</div>
+                    </div>
+                    <div class="formula-box">
+                        <div class="formula-title">📝 RUMUS</div>
+                        <div class="formula-text">${formula}</div>
+                    </div>
+                    <div class="info-panel">
+                        <div class="info-title">💡 PENJELASAN</div>
+                        <div style="color: #bbb; font-size: 13px; line-height: 1.6;">${note}</div>
+                    </div>
+                    <button class="btn-copy" onclick="copyBasicResult('${resultText}')">📋 COPY RESULT</button>
+                </div>
+            `;
+            
+            document.getElementById('basicResult').innerHTML = html;
+            document.getElementById('basicResult').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('basicResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        });
+
+        function copyCompoundingResult() {
+            const text = document.querySelector('#compoundingResult .result-container').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                btn.textContent = '✅ COPIED!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 COPY RESULT';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function copyBasicResult(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                btn.textContent = '✅ COPIED!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 COPY RESULT';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
